@@ -1,29 +1,29 @@
 syntax = "proto3";
 
-package grpc;
+package chitchat;
 
-import "google/protobuf/empty.proto";
+option go_package = "/grpc";
 
-option go_package = "github.com/NikolaiLi/Chit-Chat/grpc";
-
-message JoinRequest {
-  string client_name = 1;
+service ChitChatService {
+  rpc ChatStream(stream ClientMessage) returns (stream ServerMessage);
 }
 
-message PublishRequest {
-  string client_name = 1;
+message ClientMessage {
+  oneof event {
+    JoinRequest join_request = 1;
+    PublishRequest publish_request = 2;
+  }
+}
+
+message ServerMessage {
+  int64 lamport_timestamp = 1;
   string content = 2;
 }
 
-message Broadcast {
-  string content = 1;
-  int64 logical_timestamp = 2;
+message JoinRequest {
+  string name = 1;
 }
 
-service ChitChat {
-  rpc Join(JoinRequest) returns (stream Broadcast) {}
-
-  rpc Publish(PublishRequest) returns (google.protobuf.Empty) {}
-
-  rpc Leave(JoinRequest) returns (google.protobuf.Empty) {}
+message PublishRequest {
+  string content = 1;
 }
