@@ -8,22 +8,73 @@ service ChitChatService {
   rpc ChatStream(stream ClientMessage) returns (stream ServerMessage);
 }
 
+//CLIENT -> SERVER
 message ClientMessage {
   oneof event {
     JoinRequest join_request = 1;
     PublishRequest publish_request = 2;
+    LeaveRequest leave_request = 3;
   }
 }
 
-message ServerMessage {
-  int64 lamport_timestamp = 1;
-  string content = 2;
-}
-
+//client requesting to join
 message JoinRequest {
   string name = 1;
+  int64 lamport = 2;
 }
 
+//client leaving
+message LeaveRequest {
+  string name = 1;
+  int64 lamport = 2;
+}
+
+//client requesting to publishing message to server
 message PublishRequest {
   string content = 1;
+}
+
+
+
+
+//SERVER -> CLIENT
+message ServerMessage {
+  oneof event {
+    AckJoin ack_Join = 1;
+    ChatBroadcast chat = 2;
+    SystemNotification sysNotif = 3;
+    ErrorMessage error = 4;
+  }
+}
+
+//acknowledgement of join sent to client
+message AckJoin {
+  string client_id = 1;
+  int64 lamport = 2;
+}
+
+//broadcasting a client message
+message ChatBroadcast {
+  string client_id = 1;
+  string name = 2;
+  string content = 3;
+  int64 lamport = 4;
+}
+
+//chat notification when someone joins/leaves
+message SystemNotification {
+  enum Type {//fancy way of determining if its a join or leave type notification
+    TYPE_UNSPECIFIED = 0;
+    JOIN = 1;
+    LEAVE = 2;
+  }
+  Type type = 1;
+  string client_id = 2;
+  string name = 3;
+  int64 lamport = 4;
+}
+
+message ErrorMessage {
+  string message = 1;
+  int64 lamport = 2;
 }
