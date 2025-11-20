@@ -13,25 +13,25 @@ import (
 )
 
 type LamportClock struct {
-	mu    sync.Mutex
-	value int64
+	timestamp int64
+	mu        sync.Mutex
 }
 
-func (c *LamportClock) Increment() int64 {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.value++
-	return c.value
+func (l *LamportClock) Tick() int64 {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.timestamp++
+	return l.timestamp
 }
 
-func (c *LamportClock) Update(remote int64) int64 {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if remote > c.value {
-		c.value = remote
+func (l *LamportClock) Sync(remoteTimestamp int64) int64 {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if remoteTimestamp > l.timestamp {
+		l.timestamp = remoteTimestamp
 	}
-	c.value++
-	return c.value
+	l.timestamp++
+	return l.timestamp
 }
 
 type Participant struct {
@@ -50,23 +50,20 @@ type server struct {
 func newServer() *server {
 	return &server{
 		participants: make(map[string]*Participant),
-		clock:        &LamportClock{value: 0},
+		clock:        &LamportClock{timestamp: 0},
 	}
 }
 
 func (s *server) ChatStream(stream pb.ChitChatService_ChatStreamServer) error {
 	initialMsg, err := stream.Recv()
-	if err!= nil {
+	if err != nil {
 		log.Printf("Failed to receive initial message: %v", err)
 		return err
 	}
-
 	joinReq := initialMsg.GetJoinRequest()
 	if joinReq == nil {
 		return fmt.Errorf("first message from client was not a JoinRequest")
 	}
-
-	s.clock.Update(joinReq.LamportTimestamp)
 
 	participant := &Participant{
 		id:   uuid.New().String(),
@@ -80,6 +77,12 @@ func (s *server) ChatStream(stream pb.ChitChatService_ChatStreamServer) error {
 
 	log.Printf("Client connected: %s (ID: %s)", participant.name, participant.id)
 
+	joinMsg := &pb.ServerMessage{
+		LamportTimestamp: s.clock.Tick(),
+		Content:          fmt.Sprintf("Participant %s joined Chit Chat", participant.name),
+	}
+	s.broadcast(joinMsg)
+
 	defer func() {
 		log.Printf("Client disconnected: %s (ID: %s)", participant.name, participant.id)
 
@@ -87,22 +90,12 @@ func (s *server) ChatStream(stream pb.ChitChatService_ChatStreamServer) error {
 		delete(s.participants, participant.id)
 		s.mu.Unlock()
 
-		ts := s.clock.Increment()
-
 		leaveMsg := &pb.ServerMessage{
-			LamportTimestamp: ts,
+			LamportTimestamp: s.clock.Tick(),
 			Content:          fmt.Sprintf("Participant %s left Chit Chat", participant.name),
 		}
 		s.broadcast(leaveMsg)
 	}()
-
-	ts := s.clock.Increment()
-
-	joinBroadcast := &pb.ServerMessage{
-		LamportTimestamp: ts,
-		Content:          fmt.Sprintf("Participant %s joined Chit Chat", participant.name),
-	}
-	s.broadcast(joinBroadcast)
 
 	errCh := make(chan error)
 
@@ -116,29 +109,26 @@ func (s *server) receiveMessages(stream pb.ChitChatService_ChatStreamServer, p *
 	for {
 		msg, err := stream.Recv()
 		if err == io.EOF {
+			log.Printf("Client %s closed the stream.", p.name)
 			errCh <- nil
 			return
 		}
-		if err!= nil {
+		if err != nil {
 			log.Printf("Error receiving from %s: %v", p.name, err)
 			errCh <- err
 			return
 		}
 
-		if pubReq := msg.GetPublishRequest(); pubReq!= nil {
+		if pubReq := msg.GetPublishRequest(); pubReq != nil {
 			if len(pubReq.Content) > 128 {
-				log.Printf("Message from %s is too long.", p.name)
+				log.Printf("Message from %s is too long, ignoring.", p.name)
 				continue
 			}
 
-			receiveTime := s.clock.Update(pubReq.LamportTimestamp)
-
-			log.Printf("Received msg from %s at T=%d (Server updated to %d)", p.name, pubReq.LamportTimestamp, receiveTime)
-
-			broadcastTime := s.clock.Increment()
+			s.clock.Sync(pubReq.LamportTimestamp)
 
 			broadcastMsg := &pb.ServerMessage{
-				LamportTimestamp: broadcastTime,
+				LamportTimestamp: s.clock.Tick(),
 				Content:          fmt.Sprintf("%s: %s", p.name, pubReq.Content),
 			}
 			s.broadcast(broadcastMsg)
@@ -148,7 +138,7 @@ func (s *server) receiveMessages(stream pb.ChitChatService_ChatStreamServer, p *
 
 func (s *server) sendMessages(stream pb.ChitChatService_ChatStreamServer, p *Participant, errCh chan error) {
 	for msg := range p.ch {
-		if err := stream.Send(msg); err!= nil {
+		if err := stream.Send(msg); err != nil {
 			log.Printf("Error sending to %s: %v", p.name, err)
 			errCh <- err
 			return
@@ -163,18 +153,17 @@ func (s *server) broadcast(msg *pb.ServerMessage) {
 	log.Printf("Broadcasting message (T=%d): %s", msg.LamportTimestamp, msg.Content)
 
 	for _, p := range s.participants {
-		select {
-		case p.ch <- msg:
-		default:
-			log.Printf("Warning: Client %s channel full, dropping message", p.name)
-		}
+		p.ch <- msg
 	}
 }
 
 func main() {
+	log.SetFlags(log.Ltime)
+	log.SetPrefix("SERVER: ")
+
 	port := ":50051"
 	lis, err := net.Listen("tcp", port)
-	if err!= nil {
+	if err != nil {
 		log.Fatalf("Could not listen on port %s: %v", port, err)
 	}
 
@@ -184,7 +173,7 @@ func main() {
 	pb.RegisterChitChatServiceServer(grpcServer, chatServer)
 
 	log.Printf("Server starting on %s", port)
-	if err := grpcServer.Serve(lis); err!= nil {
+	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to start gRPC server: %v", err)
 	}
 }

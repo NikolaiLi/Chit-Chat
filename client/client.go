@@ -44,6 +44,9 @@ func main() {
 	}
 	name := os.Args[1]
 
+	log.SetFlags(log.Ltime)
+	log.SetPrefix(fmt.Sprintf("CLIENT %s: ", name))
+
 	clock := &LamportClock{timestamp: 0}
 
 	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -57,7 +60,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not open stream: %v", err)
 	}
-	log.Printf("Connected to Chit-Chat as %s", name)
+
+	log.Printf("Connected to Chit-Chat server")
 
 	joinMsg := &pb.ClientMessage{
 		Event: &pb.ClientMessage_JoinRequest{
@@ -75,7 +79,10 @@ func main() {
 			}
 
 			newTime := clock.Sync(msg.LamportTimestamp)
+
 			fmt.Printf("[%d] %s\n", newTime, msg.Content)
+
+			log.Printf("Received message: [%d] %s", newTime, msg.Content)
 		}
 	}()
 
