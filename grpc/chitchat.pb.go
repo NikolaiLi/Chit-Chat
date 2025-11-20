@@ -156,10 +156,11 @@ func (x *ServerMessage) GetContent() string {
 }
 
 type JoinRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Name             string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	LamportTimestamp int64                  `protobuf:"varint,2,opt,name=lamport_timestamp,json=lamportTimestamp,proto3" json:"lamport_timestamp,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *JoinRequest) Reset() {
@@ -199,11 +200,19 @@ func (x *JoinRequest) GetName() string {
 	return ""
 }
 
+func (x *JoinRequest) GetLamportTimestamp() int64 {
+	if x != nil {
+		return x.LamportTimestamp
+	}
+	return 0
+}
+
 type PublishRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Content       string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Content          string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	LamportTimestamp int64                  `protobuf:"varint,2,opt,name=lamport_timestamp,json=lamportTimestamp,proto3" json:"lamport_timestamp,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *PublishRequest) Reset() {
@@ -243,6 +252,13 @@ func (x *PublishRequest) GetContent() string {
 	return ""
 }
 
+func (x *PublishRequest) GetLamportTimestamp() int64 {
+	if x != nil {
+		return x.LamportTimestamp
+	}
+	return 0
+}
+
 var File_grpc_chitchat_proto protoreflect.FileDescriptor
 
 const file_grpc_chitchat_proto_rawDesc = "" +
@@ -254,11 +270,13 @@ const file_grpc_chitchat_proto_rawDesc = "" +
 	"\x05event\"V\n" +
 	"\rServerMessage\x12+\n" +
 	"\x11lamport_timestamp\x18\x01 \x01(\x03R\x10lamportTimestamp\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\"!\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"N\n" +
 	"\vJoinRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"*\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12+\n" +
+	"\x11lamport_timestamp\x18\x02 \x01(\x03R\x10lamportTimestamp\"W\n" +
 	"\x0ePublishRequest\x12\x18\n" +
-	"\acontent\x18\x01 \x01(\tR\acontent2U\n" +
+	"\acontent\x18\x01 \x01(\tR\acontent\x12+\n" +
+	"\x11lamport_timestamp\x18\x02 \x01(\x03R\x10lamportTimestamp2U\n" +
 	"\x0fChitChatService\x12B\n" +
 	"\n" +
 	"ChatStream\x12\x17.chitchat.ClientMessage\x1a\x17.chitchat.ServerMessage(\x010\x01B\aZ\x05/grpcb\x06proto3"

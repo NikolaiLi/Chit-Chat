@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 
 	pb "github.com/NikolaiLi/Chit-Chat/grpc"
@@ -15,11 +16,35 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+type LamportClock struct {
+	timestamp int64
+	mu        sync.Mutex
+}
+
+func (l *LamportClock) Tick() int64 {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.timestamp++
+	return l.timestamp
+}
+
+func (l *LamportClock) Sync(remoteTimestamp int64) int64 {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if remoteTimestamp > l.timestamp {
+		l.timestamp = remoteTimestamp
+	}
+	l.timestamp++
+	return l.timestamp
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatalf("Usage: go run client/client.go <name>")
 	}
 	name := os.Args[1]
+
+	clock := &LamportClock{timestamp: 0}
 
 	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -46,9 +71,11 @@ func main() {
 			msg, err := stream.Recv()
 			if err != nil {
 				log.Printf("Connection to server lost: %v", err)
-				os.Exit(1) // Exit if the server closes the stream.
+				os.Exit(1)
 			}
-			fmt.Printf("[%d] %s\n", msg.LamportTimestamp, msg.Content)
+
+			newTime := clock.Sync(msg.LamportTimestamp)
+			fmt.Printf("[%d] %s\n", newTime, msg.Content)
 		}
 	}()
 
@@ -74,9 +101,14 @@ func main() {
 			continue
 		}
 
+		currentTimestamp := clock.Tick()
+
 		publishMsg := &pb.ClientMessage{
 			Event: &pb.ClientMessage_PublishRequest{
-				PublishRequest: &pb.PublishRequest{Content: line},
+				PublishRequest: &pb.PublishRequest{
+					Content:          line,
+					LamportTimestamp: currentTimestamp,
+				},
 			},
 		}
 		if err := stream.Send(publishMsg); err != nil {
