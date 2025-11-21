@@ -77,9 +77,10 @@ func (s *server) ChatStream(stream pb.ChitChatService_ChatStreamServer) error {
 
 	log.Printf("Client connected: %s (ID: %s)", participant.name, participant.id)
 
+	ts := s.clock.Tick()
 	joinMsg := &pb.ServerMessage{
-		LamportTimestamp: s.clock.Tick(),
-		Content:          fmt.Sprintf("Participant %s joined Chit Chat", participant.name),
+		LamportTimestamp: ts,
+		Content:          fmt.Sprintf("Participant %s joined Chit Chat at logical time %d", participant.name, ts),
 	}
 	s.broadcast(joinMsg)
 
@@ -90,9 +91,10 @@ func (s *server) ChatStream(stream pb.ChitChatService_ChatStreamServer) error {
 		delete(s.participants, participant.id)
 		s.mu.Unlock()
 
+		ts := s.clock.Tick()
 		leaveMsg := &pb.ServerMessage{
-			LamportTimestamp: s.clock.Tick(),
-			Content:          fmt.Sprintf("Participant %s left Chit Chat", participant.name),
+			LamportTimestamp: ts,
+			Content:          fmt.Sprintf("Participant %s left Chit Chat at logical time %d", participant.name, ts),
 		}
 		s.broadcast(leaveMsg)
 	}()

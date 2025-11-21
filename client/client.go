@@ -68,6 +68,7 @@ func main() {
 			JoinRequest: &pb.JoinRequest{Name: name},
 		},
 	}
+
 	stream.Send(joinMsg)
 
 	go func() {
@@ -78,11 +79,11 @@ func main() {
 				os.Exit(1)
 			}
 
-			newTime := clock.Sync(msg.LamportTimestamp)
+			clock.Sync(msg.LamportTimestamp)
 
-			fmt.Printf("[%d] %s\n", newTime, msg.Content)
+			fmt.Printf("[%d] %s\n", msg.LamportTimestamp, msg.Content)
 
-			log.Printf("Received message: [%d] %s", newTime, msg.Content)
+			log.Printf("Received message: [msg=%d] %s", msg.LamportTimestamp, msg.Content)
 		}
 	}()
 
