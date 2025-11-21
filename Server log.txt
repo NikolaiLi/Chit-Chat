@@ -1,0 +1,27 @@
+Log server:
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+Loading personal and system profiles took 9244ms.
+PS C:\Users\dajap\OneDrive\ITU\3. semester\Distributed Systems\Assignment 3\Chit-Chat> go run server/server.go
+SERVER: 13:17:08 Server starting on :50051
+SERVER: 13:17:31 Client connected: lisa (ID: 0b325033-59c9-4719-b525-5d4d385ffada)
+SERVER: 13:17:31 Broadcasting message (T=1): Participant lisa joined Chit Chat at logical time 1
+SERVER: 13:17:33 Client connected: jakob (ID: a26f7f27-5056-493d-99b5-f71365f8069d)
+SERVER: 13:17:33 Broadcasting message (T=2): Participant jakob joined Chit Chat at logical time 2
+SERVER: 13:20:19 Broadcasting message (T=6): lisa: hejsa
+SERVER: 13:20:22 Broadcasting message (T=10): jakob: yoyo
+SERVER: 13:20:27 Broadcasting message (T=14): lisa: Jakob?
+SERVER: 13:20:31 Broadcasting message (T=18): jakob: Det er jo mig
+SERVER: 13:21:21 Broadcasting message (T=22): lisa: har du mine penge? vi snakker 8.5k med renter om lidt
+SERVER: 13:21:34 Broadcasting message (T=26): jakob: Øhhhh
+SERVER: 13:23:14 Error receiving from jakob: rpc error: code = Canceled desc = context canceled
+SERVER: 13:23:14 Client disconnected: jakob (ID: a26f7f27-5056-493d-99b5-f71365f8069d)
+SERVER: 13:23:14 Broadcasting message (T=27): Participant jakob left Chit Chat at logical time 27
+SERVER: 13:23:45 Error receiving from lisa: rpc error: code = Canceled desc = context canceled
+SERVER: 13:23:45 Client disconnected: lisa (ID: 0b325033-59c9-4719-b525-5d4d385ffada)
+SERVER: 13:23:45 Broadcasting message (T=28): Participant lisa left Chit Chat at logical time 28
+exit status 0xc000013a

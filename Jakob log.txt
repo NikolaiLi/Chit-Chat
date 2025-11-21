@@ -1,0 +1,29 @@
+Jakob Log:
+
+
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+Loading personal and system profiles took 7553ms.
+PS C:\Users\dajap\OneDrive\ITU\3. semester\Distributed Systems\Assignment 3\Chit-Chat> go run client/client.go jakob
+CLIENT jakob: 13:17:33 Connected to Chit-Chat server
+Enter your messages (press Ctrl+C to exit):
+[2] Participant jakob joined Chit Chat at logical time 2
+CLIENT jakob: 13:17:33 Received message: [msg=2] Participant jakob joined Chit Chat at logical time 2
+[6] lisa: hejsa
+CLIENT jakob: 13:20:19 Received message: [msg=6] lisa: hejsa
+yoyo
+[10] jakob: yoyo
+CLIENT jakob: 13:20:22 Received message: [msg=10] jakob: yoyo
+[14] lisa: Jakob?
+CLIENT jakob: 13:20:27 Received message: [msg=14] lisa: Jakob?
+Det er jo mig
+[18] jakob: Det er jo mig
+CLIENT jakob: 13:20:31 Received message: [msg=18] jakob: Det er jo mig
+Øhhhh    : har du mine penge? vi snakker 8.5k med renter om lidt
+[26] jakob: Øhhhh21:21 Received message: [msg=22] lisa: har du mine penge? vi snakker 8.5k med renter
+CLIENT jakob: 13:21:34 Received message: [msg=26] jakob: Øhhhh
+CLIENT jakob: 13:23:14 Closing stream...

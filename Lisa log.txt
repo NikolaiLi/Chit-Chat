@@ -1,0 +1,35 @@
+Lisa Log:
+
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+Loading personal and system profiles took 10503ms.
+PS C:\Users\dajap\OneDrive\ITU\3. semester\Distributed Systems\Assignment 3\Chit-Chat> go run client/client.go lisa
+CLIENT lisa: 13:17:31 Connected to Chit-Chat server
+Enter your messages (press Ctrl+C to exit):
+[1] Participant lisa joined Chit Chat at logical time 1
+CLIENT lisa: 13:17:31 Received message: [msg=1] Participant lisa joined Chit Chat at logical time 1
+[2] Participant jakob joined Chit Chat at logical time 2
+CLIENT lisa: 13:17:33 Received message: [msg=2] Participant jakob joined Chit Chat at logical time 2
+hejsa
+[6] lisa: hejsa
+CLIENT lisa: 13:20:19 Received message: [msg=6] lisa: hejsa
+[10] jakob: yoyo
+CLIENT lisa: 13:20:22 Received message: [msg=10] jakob: yoyo
+Jakob?
+[14] lisa: Jakob?
+CLIENT lisa: 13:20:27 Received message: [msg=14] lisa: Jakob?
+[18] jakob: Det er jo mig
+CLIENT lisa: 13:20:31 Received message: [msg=18] jakob: Det er jo mig
+har du mine penge? vi snakker 8.5k med renter om lidt
+[22] lisa: har du mine penge? vi snakker 8.5k med renter om lidt
+CLIENT lisa: 13:21:21 Received message: [msg=22] lisa: har du mine penge? vi snakker 8.5k med renter om lidt
+[26] jakob: Øhhhh
+CLIENT lisa: 13:21:34 Received message: [msg=26] jakob: Øhhhh
+[27] Participant jakob left Chit Chat at logical time 27
+CLIENT lisa: 13:23:14 Received message: [msg=27] Participant jakob left Chit Chat at logical time 27
+CLIENT lisa: 13:23:45 Closing stream...
+PS C:\Users\dajap\OneDrive\ITU\3. semester\Distributed Systems\Assignment 3\Chit-Chat>
